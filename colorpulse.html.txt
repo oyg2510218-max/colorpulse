@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ColorPulse Ultimate Pro (PC)</title>
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  background: black;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  transition: background 0.2s;
+  font-family: sans-serif;
+}
+#space {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, white, transparent);
+  transition: transform 0.2s, background 0.2s, width 0.2s, height 0.2s;
+}
+.buttons {
+  margin-top: 50px;
+  display: flex;
+  gap: 20px;
+}
+button {
+  width: 120px;
+  height: 120px;
+  border: none;
+  border-radius: 50%;
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(255,255,255,0.3);
+  transition: transform 0.1s;
+}
+button:hover { transform: scale(1.1); }
+.red { background: red; }
+.green { background: green; }
+.blue { background: blue; }
+#score, #level, #judge {
+  position: absolute;
+  top: 20px;
+  font-size: 28px;
+  color: white;
+}
+#level { left: 200px; }
+#judge { left: 400px; }
+</style>
+</head>
+<body>
+<div id="score">점수: 0</div>
+<div id="level">레벨: 1</div>
+<div id="judge">판정: -</div>
+<div id="space"></div>
+<div class="buttons">
+  <button class="red" data-color="red">🔥 화남</button>
+  <button class="green" data-color="green">💚 좋음</button>
+  <button class="blue" data-color="blue">💧 슬픔</button>
+</div>
+
+<script>
+const colors = ["red","green","blue"];
+const space = document.getElementById("space");
+const scoreDisplay = document.getElementById("score");
+const levelDisplay = document.getElementById("level");
+const judgeDisplay = document.getElementById("judge");
+
+let score = 0, level = 1;
+let currentColor = "", beatInterval = 1000;
+let timer;
+
+// 시작 안내
+alert("게임 시작!\n배경색이 변할 때 해당 감정 버튼을 누르세요.\n클릭하면 바로 시작합니다!");
+
+document.body.addEventListener("click", () => {
+  startGame();
+}, { once: true });
+
+function startGame(){
+  spawnColor();
+  timer = setInterval(spawnColor, beatInterval);
+}
+
+// 색 등장 + 효과
+function spawnColor(){
+  currentColor = colors[Math.floor(Math.random()*colors.length)];
+  document.body.style.background = currentColor;
+  let rotateVal = currentColor==='red'?60:currentColor==='green'?-60:0;
+  space.style.transform = `rotate(${rotateVal + (Math.random()*20-10)}deg)`;
+  space.style.width = "250px";
+  space.style.height = "250px";
+  setTimeout(()=>{
+    space.style.width = "200px";
+    space.style.height = "200px";
+  },150);
+}
+
+// 버튼 클릭 판정
+document.querySelectorAll("button").forEach(btn=>{
+  btn.addEventListener("click", e=>{
+    const color = e.target.dataset.color;
+    let points = 0;
+    if(color === currentColor){
+      judgeDisplay.textContent = "판정: Perfect!";
+      points = 2;
+      score += points;
+      scoreDisplay.textContent = "점수: "+score;
+      space.style.background = `radial-gradient(circle, ${color}, white)`;
+      space.style.width = "300px";
+      space.style.height = "300px";
+      space.style.transform = `rotate(${Math.random()*360}deg)`;
+      setTimeout(()=>{space.style.width="200px"; space.style.height="200px";},150);
+    } else {
+      judgeDisplay.textContent = "판정: Miss!";
+      score = Math.max(0, score-1);
+      scoreDisplay.textContent = "점수: "+score;
+      space.style.background = "radial-gradient(circle, gray, black)";
+      space.style.transform = `rotate(${Math.random()*360}deg)`;
+    }
+
+    if(score >= level*10){
+      level++;
+      levelDisplay.textContent = "레벨: "+level;
+      beatInterval = Math.max(200, beatInterval*0.95);
+      clearInterval(timer);
+      timer = setInterval(spawnColor, beatInterval);
+    }
+  });
+});
+</script>
+</body>
+</html>
